@@ -32,9 +32,8 @@ class GameBoard:
             for x in range(self.dimension):
                 if self.cell_row_list[x][y].value == 0:
                     empty_cell_list.append(self.cell_row_list[y][x])
-        for x in empty_cell_list:
-            print(x.coordinates)
-
+        # for x in empty_cell_list:
+        #     print(x.coordinates)
         cell_to_fill_index = random.randint(0, len(empty_cell_list) - 1)
         empty_cell_coordinate = [empty_cell_list[cell_to_fill_index].coordinates[x] for x in range(2)]
         print(empty_cell_coordinate[0], empty_cell_coordinate[1])
@@ -45,9 +44,23 @@ class GameBoard:
     def shift_cells(self, direction):
         if direction == 1:
             shifting = self.cell_row_list
-            cells_to_compare_array = shifting[self.dimension - 1]
-            print("shifting:")
-            print(cells_to_compare_array)
+            cells_addit = shifting[self.dimension - 1]
+            print(cells_addit)
+            cells_base = shifting[self.dimension - 2]
+            for num in range(len(cells_addit)):
+                print(cells_addit[num], cells_base[num])
+                # cells_base[num].merge_with(cells_addit[num])
+                if cells_base[num].compare(cells_addit[num]):
+                    if cells_base[num].value != 0:
+                        cells_base[num].value = cells_base[num].value**self.number_of_the_game
+                    cells_addit[num].value = 0       # replace with *prev*
+                else:
+                    if cells_base[num].value == 0:
+                        if cells_addit[num].value != 0:
+                            cells_base[num].value = cells_addit[num].value
+                            cells_addit[num].value = 0
+            for row in shifting:
+                row = cells_base
 
 
     class Cell:
@@ -60,6 +73,15 @@ class GameBoard:
         def __repr__(self):
             return str(self.value)
 
+        def compare(self, cell):
+            if self.value == cell.value:
+                return True
+            else:
+                return False
+
+        def merge_with(self, cell):
+            self.value = cell.value
+
 
 def game_session(board_dimension=2):
     board = GameBoard(board_dimension)
@@ -67,6 +89,7 @@ def game_session(board_dimension=2):
         board._fill_random_with_random()
     print(board)
     board.shift_cells(1)
+    print(board)
 
 
 def main():
