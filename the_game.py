@@ -4,6 +4,7 @@ import random
 class GameBoard:
     cell = []
     dimension = 0
+    number_of_the_game = 3
 
     def __init__(self, dimension):
         self.dimension = dimension
@@ -17,6 +18,14 @@ class GameBoard:
         row_list = ('\n'.join(row_list))
         return row_list
 
+    def _get_random_number(self):
+        num = self.number_of_the_game
+        seed_1 = random.randint(0, 5)
+        seed_2 = random.randint(0, 5)
+        if seed_2 == seed_1:
+            num = num ** num
+        return num
+
     def _fill_random_with_random(self):
         empty_cell_list = list()
         for y in range(self.dimension):
@@ -25,13 +34,7 @@ class GameBoard:
                     empty_cell_list.append(self.cell[x][y])
         cell_to_fill_index = random.randint(0, len(empty_cell_list) - 1)
         empty_cell_coordinate = [empty_cell_list[cell_to_fill_index].coordinates[x] for x in range(2)]
-        self.cell[empty_cell_coordinate[0]][empty_cell_coordinate[1]].value = 255
-        # cell_raw[self.cell[x, y] for x in self.cell if ]
-        for x in self.cell:
-            print("one instance", x, '\n')
-        row_num = random.randint(0, self.dimension-1)
-        col_num = random.randint(0, self.dimension-1)
-        print(row_num, col_num)
+        self.cell[empty_cell_coordinate[0]][empty_cell_coordinate[1]].value = self._get_random_number()
 
     class Cell:
         value = 0
