@@ -1,4 +1,5 @@
 import random
+import getch
 
 
 class GameBoard:
@@ -34,46 +35,44 @@ class GameBoard:
                     empty_cell_list.append(self.cell_row_list[y][x])
         # for x in empty_cell_list:
         #     print(x.coordinates)
-        cell_to_fill_index = random.randint(0, len(empty_cell_list) - 1)
-        empty_cell_coordinate = [empty_cell_list[cell_to_fill_index].coordinates[x] for x in range(2)]
-        print(empty_cell_coordinate[0], empty_cell_coordinate[1])
-        value = self._get_random_number()
-        print(value)
-        self.cell_row_list[empty_cell_coordinate[0]][empty_cell_coordinate[1]].value = value
+        if empty_cell_list:
+            print("not yet out")
+            cell_to_fill_index = random.randint(0, len(empty_cell_list) - 1)
+            empty_cell_coordinate = [empty_cell_list[cell_to_fill_index].coordinates[x] for x in range(2)]
+            # print(empty_cell_coordinate[0], empty_cell_coordinate[1])
+            value = self._get_random_number()
+            # print(value)
+            self.cell_row_list[empty_cell_coordinate[0]][empty_cell_coordinate[1]].value = value
+        else:
+            print("vse, net vsobodnih")
+        return empty_cell_list      # going to be false in case the list will be empty
+
+
+    def func(self, array):
+        for index in range(len(array)-1):
+            # print("--------------------------------\nb4 all")
+            # print("curr ", shifting[index])
+            # print("next ", shifting[index + 1])
+            # print(self.__repr__())
+            for ind_cell in range(len(array[index])):
+                if array[index][ind_cell].merge_with(array[index + 1][ind_cell]):
+                    array[index + 1][ind_cell].value = 0
+            # print("--------------------------------\nafter all")
+
 
     def shift_cells(self, direction):
         if direction == 1:
             shifting = self.cell_row_list
-            print("shifting b4 ", shifting)
-            print(shifting)
-            shifting.append([self.Cell([x, self.dimension]) for x in range(self.dimension)])    # additional empty list
-            shifting = list(reversed(shifting))
-            print(shifting)
-            print("len shifting ravno ", len(shifting))
-            for index in range(len(shifting)-1):
-                print("index now is ", index)
-                for ind_cell in range(len(shifting[index])):
-                    # print(shifting[index][ind_cell])
-                    # print("index is ", index)
-                    # print(ind_cell)
-                    # print(self.__repr__())
-                    if shifting[index + 1][ind_cell].merge_with(shifting[index][ind_cell]):
-                        shifting[index + 1][ind_cell].value = 0
-            print(shifting)
-            # shifting.pop()
-            # shifting = list(reversed(shifting))
-            print("non reversed is ", shifting)
-            self.cell_row_list = shifting
-            # print("but reversed is ", list(reversed(shifting)))
-            # cells_addit = shifting[self.dimension - 1]
-            # print(cells_addit)
-            # cells_base = shifting[self.dimension - 2]
-            # for num in range(len(cells_addit)):
-            #     print(cells_addit[num], cells_base[num])
-            #     if cells_base[num].merge_with(cells_addit[num]):
-            #         cells_addit[num] = 0
-            # for row in shifting:
-            #     row = cells_base
+        elif direction == 0:
+            shifting = list(reversed(self.cell_row_list))
+        # print("shifting b4 ", shifting)
+        print("len shifting ravno ", len(shifting))
+        for _ in range(2):
+            self.func(shifting)
+        return self._fill_random_with_random()
+        # for _ in range(len(shifting)-1):        # workaround additional loop
+            # print("curr ", shifting[index])
+            # print("next ", shifting[index + 1])
 
     class Cell:
         value = 0
@@ -92,7 +91,7 @@ class GameBoard:
                 return False
 
         def merge_with(self, cell):
-            print("comparing ", self.value, "with ", cell.value)
+            # print("comparing ", self.value, "with ", cell.value)
             merged = False
             if self.compare(cell):
                 if self.value != 0:
@@ -102,17 +101,24 @@ class GameBoard:
                 if cell.value != 0:
                     self.value = cell.value
                     merged = True
-            print("as a result ", self.value)
+            # print("as a result ", self.value)
             return merged
 
 
 def game_session(board_dimension=2):
     board = GameBoard(board_dimension)
-    for x in range(6):
-        board._fill_random_with_random()
-    print(board)
-    board.shift_cells(1)
-    print(board)
+    # board._fill_random_with_random()
+    # print(board)
+    while(board.shift_cells(1)):
+        print("--------------------------------\nadded random")
+        # board._fill_random_with_random()
+        print(board)
+        char = getch.getche() # also displayed on the screen
+        # x = board.shift_cells(1)
+        # print(x)
+        print("--------------------------------\nafter all")
+        print(board)
+    print("ENDGAME")
 
 
 def main():
