@@ -23,7 +23,7 @@ class GameBoard:
         seed_1 = random.randint(0, 5)
         seed_2 = random.randint(0, 5)
         if seed_2 == seed_1:
-            num = num ** num
+            num = num * num
         return num
 
     def _fill_random_with_random(self):
@@ -44,24 +44,36 @@ class GameBoard:
     def shift_cells(self, direction):
         if direction == 1:
             shifting = self.cell_row_list
-            cells_addit = shifting[self.dimension - 1]
-            print(cells_addit)
-            cells_base = shifting[self.dimension - 2]
-            for num in range(len(cells_addit)):
-                print(cells_addit[num], cells_base[num])
-                # cells_base[num].merge_with(cells_addit[num])
-                if cells_base[num].compare(cells_addit[num]):
-                    if cells_base[num].value != 0:
-                        cells_base[num].value = cells_base[num].value**self.number_of_the_game
-                    cells_addit[num].value = 0       # replace with *prev*
-                else:
-                    if cells_base[num].value == 0:
-                        if cells_addit[num].value != 0:
-                            cells_base[num].value = cells_addit[num].value
-                            cells_addit[num].value = 0
-            for row in shifting:
-                row = cells_base
-
+            print("shifting b4 ", shifting)
+            print(shifting)
+            shifting.append([self.Cell([x, self.dimension]) for x in range(self.dimension)])    # additional empty list
+            shifting = list(reversed(shifting))
+            print(shifting)
+            print("len shifting ravno ", len(shifting))
+            for index in range(len(shifting)-1):
+                print("index now is ", index)
+                for ind_cell in range(len(shifting[index])):
+                    # print(shifting[index][ind_cell])
+                    # print("index is ", index)
+                    # print(ind_cell)
+                    # print(self.__repr__())
+                    if shifting[index + 1][ind_cell].merge_with(shifting[index][ind_cell]):
+                        shifting[index + 1][ind_cell].value = 0
+            print(shifting)
+            # shifting.pop()
+            # shifting = list(reversed(shifting))
+            print("non reversed is ", shifting)
+            self.cell_row_list = shifting
+            # print("but reversed is ", list(reversed(shifting)))
+            # cells_addit = shifting[self.dimension - 1]
+            # print(cells_addit)
+            # cells_base = shifting[self.dimension - 2]
+            # for num in range(len(cells_addit)):
+            #     print(cells_addit[num], cells_base[num])
+            #     if cells_base[num].merge_with(cells_addit[num]):
+            #         cells_addit[num] = 0
+            # for row in shifting:
+            #     row = cells_base
 
     class Cell:
         value = 0
@@ -80,12 +92,23 @@ class GameBoard:
                 return False
 
         def merge_with(self, cell):
-            self.value = cell.value
+            print("comparing ", self.value, "with ", cell.value)
+            merged = False
+            if self.compare(cell):
+                if self.value != 0:
+                    self.value = self.value * GameBoard.number_of_the_game
+                    merged = True
+            elif self.value == 0:
+                if cell.value != 0:
+                    self.value = cell.value
+                    merged = True
+            print("as a result ", self.value)
+            return merged
 
 
 def game_session(board_dimension=2):
     board = GameBoard(board_dimension)
-    for x in range(2):
+    for x in range(6):
         board._fill_random_with_random()
     print(board)
     board.shift_cells(1)
@@ -93,7 +116,7 @@ def game_session(board_dimension=2):
 
 
 def main():
-    game_session(2)
+    game_session(3)
 
 
 if __name__ == '__main__':
