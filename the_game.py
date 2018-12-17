@@ -9,7 +9,7 @@ class GameBoard:
 
     def __init__(self, dimension):
         self.dimension = dimension
-        self.cell_row_list = ([[self.Cell([x, y]) for x in range(dimension)] for y in range(dimension)])
+        self.cell_row_list = [[self.Cell([x, y]) for x in range(dimension)] for y in range(dimension)]
 
     def __repr__(self):
         row_list = []
@@ -47,8 +47,7 @@ class GameBoard:
             print("vse, net vsobodnih")
         return empty_cell_list      # going to be false in case the list will be empty
 
-
-    def func(self, array):
+    def shift_lines(self, array):
         for index in range(len(array)-1):
             # print("--------------------------------\nb4 all")
             # print("curr ", shifting[index])
@@ -57,22 +56,23 @@ class GameBoard:
             for ind_cell in range(len(array[index])):
                 if array[index][ind_cell].merge_with(array[index + 1][ind_cell]):
                     array[index + 1][ind_cell].value = 0
+            return array
             # print("--------------------------------\nafter all")
 
+    def shift_to_direction(self, direction):
+        shifting = [[self.Cell([x, y]) for x in range(self.dimension)] for y in range(self.dimension)]
 
-    def shift_cells(self, direction):
         if direction == 1:
-            shifting = self.cell_row_list
-        elif direction == 0:
+            shifting = self.cell_row_list.copy()
+        if direction == 2:
+            shifting = list(zip(*self.cell_row_list.copy()))
+        elif direction == 3:
             shifting = list(reversed(self.cell_row_list))
-        # print("shifting b4 ", shifting)
         print("len shifting ravno ", len(shifting))
         for _ in range(2):
-            self.func(shifting)
+             shifting = self.shift_lines(shifting)
+        self.cell_row_list = shifting.copy()
         return self._fill_random_with_random()
-        # for _ in range(len(shifting)-1):        # workaround additional loop
-            # print("curr ", shifting[index])
-            # print("next ", shifting[index + 1])
 
     class Cell:
         value = 0
@@ -108,16 +108,18 @@ class GameBoard:
 def game_session(board_dimension=2):
     board = GameBoard(board_dimension)
     # board._fill_random_with_random()
-    # print(board)
-    while(board.shift_cells(1)):
+    # board.shift_to_direction(2)
+
+    while board.shift_to_direction(1):
         print("--------------------------------\nadded random")
         # board._fill_random_with_random()
         print(board)
         char = getch.getche() # also displayed on the screen
         # x = board.shift_cells(1)
         # print(x)
-        print("--------------------------------\nafter all")
+        print("after all")
         print(board)
+        print("--------------------------------\n")
     print("ENDGAME")
 
 
