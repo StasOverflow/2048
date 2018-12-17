@@ -10,6 +10,8 @@ class GameBoard:
     cell_row_list = []
     dimension = 0
     number_of_the_game = 3
+    arrow = False
+
     moves = {
         'w': 'Up',
         'W': 'Up',
@@ -107,15 +109,23 @@ class GameBoard:
             print("Entering something")
         elif move == 'Quit':
             print("Exiting")
-            exit()
+            return 0
 
 
     def receive_move(self, ch):
+        if ch.encode() == b'[':
+            self.arrow = True
+        print(ch, ch.encode())
+        print(self.arrow)
         if ch in self.moves:
-            self._proceed_move(self.moves[ch])
-
-    # def game_play(self):
-
+            if not self.arrow:
+                print(ch)
+                self._proceed_move(self.moves[ch])
+                self.arrow = False
+                return True
+            else:
+                self.arrow = False
+        return False
 
 
     class Cell:
@@ -149,12 +159,19 @@ class GameBoard:
             return merged
 
 
+#
+# def make_a_move(game_board):
+#     game_board.receive_move(receive_character())
+
+
 def game_session(board_dimension=2):
     board = GameBoard(board_dimension)
-    # board._fill_random_with_random()
-    # board.shift_to_direction(2)
+    board._fill_random_with_random()
+    playing = True
     while 1:
-        board.receive_move(receive_character())
+        if board.receive_move(receive_character()):
+            board._fill_random_with_random()
+            print(board)
     # while board.shift_to_direction(1):
         # print("--------------------------------\nadded random")
         # board._fill_random_with_random()
@@ -169,7 +186,7 @@ def game_session(board_dimension=2):
     # board.receive_character()
 
 def main():
-    game_session(3)
+    game_session(4)
 
 
 if __name__ == '__main__':
