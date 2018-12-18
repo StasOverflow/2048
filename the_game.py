@@ -3,7 +3,12 @@ import getch
 
 
 def receive_character():
-    return getch.getch()
+    try:
+        ch = getch.getch()
+    except OverflowError:
+        print("Please use EN Layout")
+        ch = None
+    return ch
 
 
 class GameBoard:
@@ -29,7 +34,7 @@ class GameBoard:
 
     def __init__(self, dimension):
         self.dimension = dimension
-        self.cell_row_list = [[self.Cell([x, y]) for x in range(dimension)] for y in range(dimension)]
+        self.cell_row_list = [[self.Cell() for x in range(dimension)] for y in range(dimension)]
 
     def __repr__(self):
         row_list = []
@@ -48,56 +53,47 @@ class GameBoard:
         return num
 
     def _fill_random_with_random(self):
-        empty_cell_list = list()
-        for y in range(self.dimension):
-            for x in range(self.dimension):
+        index_list = list()
+        for x in range(self.dimension):
+            for y in range(self.dimension):
                 if self.cell_row_list[x][y].value == 0:
-                    empty_cell_list.append(self.cell_row_list[y][x])
-        if empty_cell_list:
+                    index_list.append([x, y])
+        print(index_list)
+        if index_list:
             print("not yet out")
-            cell_to_fill_index = random.randint(0, len(empty_cell_list) - 1)
-            empty_cell_coordinate = [empty_cell_list[cell_to_fill_index].coordinates[x] for x in range(2)]
+            rand_cell_index = random.randint(0, len(index_list) - 1)
             value = self._get_random_number()
-            self.cell_row_list[empty_cell_coordinate[0]][empty_cell_coordinate[1]].value = value
+            x_coord = index_list[rand_cell_index][0]
+            y_coord = index_list[rand_cell_index][1]
+            self.cell_row_list[x_coord][y_coord].value = value
         else:
             print("vse, net vsobodnih")
-        return empty_cell_list      # going to be false in case the list will be empty
+        return index_list      # going to be false in case the list will be empty
 
     def shift_lines(self, array):
-        print(self.__repr__())
+        # first, delete all empty elements to shift cells to a border
+        print("before ", array)
+        new_array = [x for x in array if x.value != 0]
+        new_array.extend([self.Cell(0) for x in range(self.dimension - len(new_array))])
+        print("after ", new_array)
 
-        for num, x in enumerate(array):
-            print(x[0], x[1], x[2])
-            x[0].merge_with()
-        # for index in range(len(array)-1):
-        #     # print("--------------------------------\nb4 all")
-        #     print("curr ", array[index])
-        #     print("next ", array[index + 1])
-        #     # print(self.__repr__())
-        #     for ind_cell in range(len(array[index])):
-        #         if array[index][ind_cell].merge_with(array[index + 1][ind_cell]):
-        #             array[index + 1][ind_cell].value = 0
-        return array
-            # print("--------------------------------\nafter all")
+        # then check for similar cells to multiply
+        for x in range(self.dimension):
+            if new_array[x].value:
+                print("in cell ", x)
+                if new_array[x].value == new_array[x+1].value:
+                    new_array[x+1].value = new_array[x].value * GameBoard.number_of_the_game
+                    new_array.pop(0)
+                    new_array.append(self.Cell(0))
+                    print("after multiplying", new_array)
 
-    def shift_to_direction(self, direction):
-        shifting = [[self.Cell([x, y]) for x in range(self.dimension)] for y in range(self.dimension)]
+        return new_array
 
-        if direction == 1:
-            shifting = self.cell_row_list.copy()
-        if direction == 2:
-            shifting = list(zip(*self.cell_row_list.copy()))
-        elif direction == 3:
-            shifting = list(reversed(self.cell_row_list))
-        # print("len shifting ravno ", len(shifting))
-        # for _ in range(2):
-        shifting = self.shift_lines(shifting)
-        self.cell_row_list = shifting.copy()
-        return self._fill_random_with_random()
-
-
-    def _proceed_move(self, move):
+    def shift_to_direction(self, move):
+        shift_list = list()
         if move == 'Up':
+            for x in range(self.dimension):
+                shift_list.append(self.cell_row_list[x][0])
             print("moving up")
         elif move == 'Down':
             print("moving down")
@@ -105,35 +101,52 @@ class GameBoard:
             print("moving right")
         elif move == 'Left':
             print("moving left")
-        elif move == 'Enter':
-            print("Entering something")
-        elif move == 'Quit':
-            print("Exiting")
-            return 0
+
+        print("before shifting", shift_list)
+        # print(self.__repr__())
+        shift_list = self.shift_lines(shift_list)
+
+        print("after shifting", shift_list)
+
+        new_list = list()
+        for x in range(self.dimension):
+            new_list.append(self.cell_row_list[x][0])
+        print("so we need to insert stuff now into the ", new_list)
+
+        for x in range(self.dimension):
+            self.cell_row_list[x][0] = shift_list[x]
+
+
+    def _proceed_move(self, move):
+        if move in self.moves.values():
+            if move == 'Enter':
+                print("Entering something")
+            elif move == 'Quit':
+                print("Exiting")
+                return 0
+            else:
+                self.shift_to_direction(move)
 
 
     def receive_move(self, ch):
-        if ch.encode() == b'[':
-            self.arrow = True
-        print(ch, ch.encode())
-        print(self.arrow)
-        if ch in self.moves:
-            if not self.arrow:
-                print(ch)
-                self._proceed_move(self.moves[ch])
-                self.arrow = False
-                return True
-            else:
-                self.arrow = False
+        if ch is not None:
+            if ch.encode() == b'[':
+                self.arrow = True
+            if ch in self.moves:
+                if not self.arrow:
+                    self._proceed_move(self.moves[ch])
+                    self.arrow = False
+                    return True
+                else:
+                    self.arrow = False
         return False
 
 
     class Cell:
         value = 0
-        coordinates = 0
 
-        def __init__(self, coordinates):
-            self.coordinates = coordinates
+        def __init__(self, value=0):
+            self.value = value
 
         def __repr__(self):
             return str(self.value)
@@ -167,21 +180,21 @@ class GameBoard:
 def game_session(board_dimension=2):
     board = GameBoard(board_dimension)
     board._fill_random_with_random()
+    board._fill_random_with_random()
     playing = True
     while 1:
         if board.receive_move(receive_character()):
             board._fill_random_with_random()
-            print(board)
     # while board.shift_to_direction(1):
-        # print("--------------------------------\nadded random")
-        # board._fill_random_with_random()
-        # print(board)
-        # char = getch.getche() # also displayed on the screen
-        # x = board.shift_cells(1)
-        # print(x)
-        # print("after all")
-        # print(board)
-        # print("--------------------------------\n")
+            print("--------------------------------\nadded random")
+            # board._fill_random_with_random()
+            print(board)
+            # char = getch.getche() # also displayed on the screen
+            # x = board.shift_cells(1)
+            # print(x)
+            # print("after all")
+            # print(board)
+            print("--------------------------------\n")
     # print("ENDGAME")
     # board.receive_character()
 
