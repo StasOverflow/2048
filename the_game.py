@@ -83,38 +83,60 @@ class GameBoard:
                 print("in cell ", x)
                 if new_array[x].value == new_array[x+1].value:
                     new_array[x+1].value = new_array[x].value * GameBoard.number_of_the_game
-                    new_array.pop(0)
+                    new_array.pop(x)
                     new_array.append(self.Cell(0))
                     print("after multiplying", new_array)
 
         return new_array
 
     def shift_to_direction(self, move):
-        shift_list = list()
+        shift_list = [list() for _ in range(self.dimension)]
         if move == 'Up':
             for x in range(self.dimension):
-                shift_list.append(self.cell_row_list[x][0])
+                for y in range(self.dimension):
+                    shift_list[x].append(self.cell_row_list[y][x])
+            # print("before l ", self.cell_row_list)
+            # print("row_list ", shift_list)
             print("moving up")
         elif move == 'Down':
+            for y in range(self.dimension):
+                for x in reversed(range(self.dimension)):
+                    shift_list[y].append(self.cell_row_list[x][y])
             print("moving down")
         elif move == 'Right':
             print("moving right")
         elif move == 'Left':
             print("moving left")
-
         print("before shifting", shift_list)
-        # print(self.__repr__())
-        shift_list = self.shift_lines(shift_list)
+        print(self.__repr__())
 
-        print("after shifting", shift_list)
-
-        new_list = list()
-        for x in range(self.dimension):
-            new_list.append(self.cell_row_list[x][0])
-        print("so we need to insert stuff now into the ", new_list)
+        shift_row = list()
 
         for x in range(self.dimension):
-            self.cell_row_list[x][0] = shift_list[x]
+            shift_row.append(self.shift_lines(shift_list[x]))
+
+        print("after shifting", shift_row)
+
+        if move == 'Up':
+            for y in range(self.dimension):
+                for x in range(self.dimension):
+                    self.cell_row_list[x][y] = shift_row[y][x]
+            # print("before l ", self.cell_row_list)
+            # print("row_list ", shift_list)
+            print("moving up")
+        elif move == 'Down':
+            for y in range(self.dimension):
+                for x in reversed(range(self.dimension)):
+                    self.cell_row_list[(self.dimension-1)-x][y] = shift_row[y][x]
+            print(self.cell_row_list)
+            print("moving down")
+        elif move == 'Right':
+            print("moving right")
+        elif move == 'Left':
+            print("moving left")
+                # new_list[x].append(self.cell_row_list[y][x])
+        # for x in range(self.dimension):
+        #     self.cell_row_list[x][0] = shift_list[x]
 
 
     def _proceed_move(self, move):
